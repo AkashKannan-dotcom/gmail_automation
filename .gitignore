@@ -1,0 +1,14 @@
+# Google API Credentials and Tokens
+credentials.json
+token.json
+
+
+# Python virtual environment
+venv/
+*.pyc
+__pycache__/
+
+# SQLite database file
+*.db
+
+.idea

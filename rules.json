@@ -1,0 +1,32 @@
+[
+  {
+    "description": "Rule 1: Assignment Emails from happyfox.hire.trakstar.com less than 5 days old",
+    "overall_predicate": "all",
+    "conditions": [
+      {
+        "field": "From",
+        "predicate": "contains",
+        "value": "@happyfox.hire.trakstar.com"
+      },
+      {
+        "field": "Subject",
+        "predicate": "contains",
+        "value": "Assignment"
+      },
+      {
+        "field": "Received Date/Time",
+        "predicate": "less than",
+        "value": { "days": 10 }
+      }
+    ],
+    "actions": [
+      {
+        "type": "Move Message",
+        "value": "SPAM"
+      },
+      {
+        "type": "Mark as Unread"
+      }
+    ]
+  }
+]
