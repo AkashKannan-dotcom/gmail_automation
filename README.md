@@ -320,3 +320,11 @@ The `Email.from_db_row` class method serves as a Factory Method. It provides a s
 
 ### Singleton (Implicit for DB/Gmail Client)
 While not enforced with a strict Singleton design pattern (e.g., via metaclasses), the `GmailClient` and `DatabaseManager` classes are typically instantiated only once within each main script (`fetch_and_store.py` and `process_emails.py`), effectively acting as single points of contact for their respective services throughout the script's execution.
+
+
+
+
+## Gmail Automation Script Demo
+
+You can watch the full demo here:  
+[![Demo Video](https://img.shields.io/badge/Watch-Demo-blue?logo=google-drive)](https://drive.google.com/file/d/1zt2YeOQY8px4VTIsvhm-BmMD_V4aFpNi/view?usp=sharing)
