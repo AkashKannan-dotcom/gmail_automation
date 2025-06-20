@@ -2,10 +2,10 @@
 
 from gmail_client import GmailClient
 from database_manager import DatabaseManager
-from rule_engine import Email  # Only need Email class for object creation
+from rule_engine import Email
 import time
-from datetime import datetime  # For date parsing safeguard
-import email.utils  # For robust date parsing
+from datetime import datetime
+import email.utils
 
 
 def fetch_and_store_emails():
@@ -37,7 +37,7 @@ def fetch_and_store_emails():
 
     # 3. Fetch Emails from Gmail
     print("\nFetching emails from Gmail...")
-    # Fetching from 'in:inbox' for now. Can be modified to fetch 'all_mail' etc.
+    # TODO : Fetching from 'in:inbox' for now. Can be modified to fetch 'all_mail' etc.
     gmail_messages_ids = gmail_client.get_emails(query='in:inbox')
 
     if gmail_messages_ids:

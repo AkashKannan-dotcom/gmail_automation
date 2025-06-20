@@ -331,7 +331,7 @@ class TestRule(unittest.TestCase):
             from_address='safe@good.com',
             subject='Normal Subject',
             received_date_time=datetime.now(timezone.utc),
-            message_body='Buy viagra now!',  # Matches 'any' rule by message content
+            message_body='Buy viagra now!',
             label_ids=['INBOX']
         )
         self.email_not_matching = Email(
@@ -380,8 +380,8 @@ class TestRule(unittest.TestCase):
             conditions=self.conditions_any,
             actions=self.actions_any
         )
-        self.assertTrue(rule.matches(self.email_matching_any))  # Matches "viagra"
-        self.assertFalse(rule.matches(self.email_not_matching))  # Does not match any condition
+        self.assertTrue(rule.matches(self.email_matching_any))
+        self.assertFalse(rule.matches(self.email_not_matching))
 
     def test_rule_execute_actions(self):
         rule = Rule(
@@ -510,7 +510,7 @@ class TestRuleEngine(unittest.TestCase):
         self.assertTrue(mock_gmail_client.mark_as_unread.called)
         self.assertTrue(mock_gmail_client.move_message.called)
 
-        # Verify specific counts for demonstration (adjust if rules or emails change)
+        # Verify specific counts for demonstration
         # Expected mark_as_read calls: (7 calls)
         self.assertEqual(mock_gmail_client.mark_as_read.call_count, 7)
         # Expected mark_as_unread calls: (8 calls)

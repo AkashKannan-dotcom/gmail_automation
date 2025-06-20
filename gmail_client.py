@@ -151,8 +151,6 @@ class GmailClient:
                     try:
                         # Parse date string to datetime object
                         # Example format: 'Wed, 18 Jun 2025 14:43:00 +0530'
-                        # We need to handle various date formats gracefully.
-                        # A common approach is to try multiple formats or use email.utils.parsedate_to_datetime
                         parsed_date = email.utils.parsedate_to_datetime(header['value'])
                         msg_data['Received Date/Time'] = parsed_date
                     except ValueError:
@@ -333,8 +331,6 @@ class GmailClient:
             # 'INBOX' is a special label. If moving from INBOX, remove it.
             if 'INBOX' in current_label_ids and destination_mailbox.upper() != 'INBOX':
                 labels_to_remove.append('INBOX')
-            # Add other labels you want to remove (e.g., 'UNREAD' if moving to a specific 'Read' folder)
-            # This logic can be expanded based on specific requirements for "moving" behavior.
 
             labels_to_add = [label_id]
 

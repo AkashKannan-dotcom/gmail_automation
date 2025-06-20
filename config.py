@@ -24,7 +24,6 @@ RULES_FILE = 'rules.json'
 
 # --- Email Fetching Configuration ---
 # Maximum number of emails to fetch from the inbox.
-# Set a reasonable number for testing; for production, consider pagination.
 MAX_EMAIL_FETCH_RESULTS = 50
 
 # --- Folder ID Mapping ---
@@ -36,4 +35,3 @@ MAX_EMAIL_FETCH_RESULTS = 50
 # Note: For 'Move Message' action, if the rule specifies a custom label name,
 # the Gmail API requires the corresponding label ID. The GmailClient will handle this mapping.
 # For example: {'Promotions': 'Label_1234567890'} (This would be dynamically found by GmailClient)
-# It's better to get these dynamically or let the client resolve.

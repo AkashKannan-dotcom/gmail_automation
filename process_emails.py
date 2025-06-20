@@ -2,7 +2,7 @@
 
 from database_manager import DatabaseManager
 from rule_engine import RuleEngine, Email
-from gmail_client import GmailClient  # Needed for executing actions
+from gmail_client import GmailClient
 
 
 def process_stored_emails():

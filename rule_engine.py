@@ -2,14 +2,12 @@
 
 import json
 from datetime import datetime, timedelta
-import os  # Import os for path checking in _load_rules
+import os
 import logging
 from datetime import timezone
+from config import RULES_FILE
 
 logger = logging.getLogger(__name__)
-
-# Import configuration constants
-from config import RULES_FILE
 
 
 class Email:
@@ -153,7 +151,7 @@ class Condition:
                         return email_value > threshold_date  # Email is MORE recent than threshold, i.e., "less than X days old"
                     elif "months" in self.value:
                         # Simple month calculation: subtract days equivalent to months
-                        # This is an approximation; for precise month logic, consider dateutil.relativedelta
+                        # TODO: change  this to use dateutils.relativedelta
                         approx_days = self.value["months"] * 30.44  # Average days in a month
                         threshold_date = datetime.now(timezone.utc) - timedelta(days=approx_days)
                         return email_value > threshold_date
@@ -163,7 +161,8 @@ class Condition:
                 if isinstance(self.value, dict):
                     if "days" in self.value:
                         threshold_date = datetime.now(timezone.utc) - timedelta(days=self.value["days"])
-                        return email_value < threshold_date  # Email is OLDER than threshold, i.e., "greater than X days old"
+                        # Email is OLDER than threshold, i.e., "greater than X days old"
+                        return email_value < threshold_date
                     elif "months" in self.value:
                         approx_days = self.value["months"] * 30.44
                         threshold_date = datetime.now(timezone.utc) - timedelta(days=approx_days)

@@ -7,14 +7,12 @@ from datetime import datetime
 import json
 import base64
 from bs4 import BeautifulSoup
-
-# Adjust the path to import modules from the parent directory
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from gmail_client import GmailClient
-from config import TOKEN_FILE, CREDENTIALS_FILE  # Assuming these are used for patch
+from config import TOKEN_FILE, CREDENTIALS_FILE
 
 
 class TestGmailClient(unittest.TestCase):
@@ -25,8 +23,8 @@ class TestGmailClient(unittest.TestCase):
 
     @patch('gmail_client.os.path.exists')
     @patch('gmail_client.InstalledAppFlow.from_client_secrets_file')
-    @patch('gmail_client.build')  # Patch the build function itself
-    @patch('gmail_client.open', MagicMock())  # Mock open for token.json write
+    @patch('gmail_client.build')
+    @patch('gmail_client.open', MagicMock())
     def setUp(self, mock_build, mock_flow_from_file, mock_os_exists):
         """
         Set up for each test. Mocks authentication flow and Gmail API service.
@@ -35,7 +33,6 @@ class TestGmailClient(unittest.TestCase):
         self.mock_creds = MagicMock()
         self.mock_creds.valid = True
         self.mock_creds.expired = False
-        # Fix for TypeError: write() argument must be str, not MagicMock
         self.mock_creds.to_json.return_value = '{"mock_token": "some_value"}'
         mock_flow_from_file.return_value.run_local_server.return_value = self.mock_creds
 
@@ -86,9 +83,9 @@ class TestGmailClient(unittest.TestCase):
         }
 
         # Ensure credentials.json exists for the flow to be created
-        mock_os_exists.side_effect = lambda x: x == CREDENTIALS_FILE  # Default mock_os_exists behavior
+        mock_os_exists.side_effect = lambda x: x == CREDENTIALS_FILE
 
-        self.client = GmailClient()  # Initialize GmailClient, which calls build internally
+        self.client = GmailClient()
 
     def tearDown(self):
         """Clean up after each test if necessary."""
@@ -152,7 +149,6 @@ class TestGmailClient(unittest.TestCase):
             ]
         }
 
-        # Setup the full mocking chain properly
         users_mock = self.mock_service.users.return_value
         messages_mock = users_mock.messages.return_value
         get_mock = messages_mock.get.return_value
@@ -198,7 +194,6 @@ class TestGmailClient(unittest.TestCase):
             ]
         }
 
-        # Setup the full mocking chain properly
         users_mock = self.mock_service.users.return_value
         messages_mock = users_mock.messages.return_value
         get_mock = messages_mock.get.return_value
@@ -287,11 +282,10 @@ class TestGmailClient(unittest.TestCase):
         mock_creds = MagicMock()
         mock_creds.valid = True
         mock_creds.expired = False
-        # Fix for TypeError: write() argument must be str, not MagicMock
         mock_creds.to_json.return_value = '{"mock_token": "some_value"}'
         mock_creds_from_file.return_value = mock_creds
 
-        mock_build.return_value = MagicMock()  # Needs a mock service for build to return
+        mock_build.return_value = MagicMock()
 
         client = GmailClient()
         self.assertIsNotNone(client.service)
@@ -308,7 +302,6 @@ class TestGmailClient(unittest.TestCase):
         mock_creds.valid = False
         mock_creds.expired = True
         mock_creds.refresh_token = 'some_refresh_token'
-        # Fix for TypeError: write() argument must be str, not MagicMock
         mock_creds.to_json.return_value = '{"mock_token": "some_value"}'
 
         def simulate_creds_refresh(*args, **kwargs):
@@ -319,14 +312,14 @@ class TestGmailClient(unittest.TestCase):
 
         mock_creds_from_file.return_value = mock_creds
 
-        mock_build.return_value = MagicMock()  # Needs a mock service for build to return
+        mock_build.return_value = MagicMock()
 
         with patch('gmail_client.Request') as MockRequest:
             client = GmailClient()
             self.assertIsNotNone(client.service)
             mock_creds.refresh.assert_called_once_with(MockRequest.return_value)
-            self.assertFalse(client.creds.expired)  # This assertion should now pass
-            self.assertTrue(client.creds.valid)  # Adding an extra assertion for completeness
+            self.assertFalse(client.creds.expired)
+            self.assertTrue(client.creds.valid)
 
 
 if __name__ == '__main__':
