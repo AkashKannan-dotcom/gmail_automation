@@ -109,6 +109,54 @@ class DatabaseManager:
             self.conn.rollback()
             return False
 
+    def insert_many_emails(self, email_data_list):
+        """
+        Inserts multiple email records into the 'emails' table in a single transaction.
+        If an email with the same ID already exists, it updates the existing record.
+        The 'Received Date/Time' field in email_data_list is expected to already be an ISO string.
+
+        Args:
+            email_data_list (list): A list of dictionaries, where each dictionary
+                                    contains email details. The 'Received Date/Time'
+                                    should already be a string (from Email.to_dict()).
+        Returns:
+            int: The number of emails successfully inserted/updated.
+        """
+        if not email_data_list:
+            print("No emails provided for bulk insertion.")
+            return 0
+
+        data_to_insert = []
+        for email_data in email_data_list:
+            received_date_time_str = email_data['Received Date/Time']
+            label_ids_json = json.dumps(email_data.get('labelIds', []))
+            data_to_insert.append((
+                email_data['id'],
+                email_data['threadId'],
+                email_data['From'],
+                email_data['Subject'],
+                received_date_time_str,
+                email_data['Message Body'],
+                label_ids_json
+            ))
+
+        try:
+            if self.cursor is None:
+                raise sqlite3.Error("Database cursor is not available. Connection may be closed or failed.")
+
+            self.cursor.executemany(f'''
+                INSERT OR REPLACE INTO emails (id, thread_id, "from", subject, received_date_time, message_body, label_ids)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', data_to_insert)
+            self.conn.commit()
+            print(f"Successfully performed bulk insert/update of {len(email_data_list)} emails.")
+            return len(email_data_list)
+        except (sqlite3.Error, AttributeError) as e:
+            print(f"Error during bulk insertion of emails: {e}")
+            if self.conn:
+                self.conn.rollback()
+            return 0
+
     def get_all_emails(self):
         """
         Retrieves all email records from the 'emails' table.

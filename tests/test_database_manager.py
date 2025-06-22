@@ -182,6 +182,87 @@ class TestDatabaseManager(unittest.TestCase):
         self.assertEqual(emails[0]['id'], 'malformed_id')
         self.assertEqual(emails[0]['label_ids'], [])  # Should default to empty list
 
+    def test_insert_many_emails_success(self):
+        """
+        Test successful bulk insertion of multiple email records.
+        """
+        emails_data = [
+            {
+                'id': 'bulk_id_1',
+                'threadId': 'bulk_thread_1',
+                'From': 'bulk_sender1@example.com',
+                'Subject': 'Bulk Subject 1',
+                'Received Date/Time': datetime(2024, 1, 1, 12, 0, 0),
+                'Message Body': 'This is bulk email 1.',
+                'labelIds': ['INBOX']
+            },
+            {
+                'id': 'bulk_id_2',
+                'threadId': 'bulk_thread_2',
+                'From': 'bulk_sender2@example.com',
+                'Subject': 'Bulk Subject 2',
+                'Received Date/Time': datetime(2024, 1, 2, 13, 0, 0),
+                'Message Body': 'This is bulk email 2.',
+                'labelIds': ['STARRED']
+            }
+        ]
+
+        inserted_count = self.db_manager.insert_many_emails(emails_data)
+        self.assertEqual(inserted_count, 2)
+
+        # Verify insertion by fetching all and checking count and content
+        fetched_emails = self.db_manager.get_all_emails()
+        # Filter for the bulk inserted ones to avoid conflict with other tests
+        bulk_emails = [e for e in fetched_emails if e['id'].startswith('bulk_id_')]
+        self.assertEqual(len(bulk_emails), 2)
+
+        email1 = next(e for e in bulk_emails if e['id'] == 'bulk_id_1')
+        self.assertEqual(email1['from'], 'bulk_sender1@example.com')
+        self.assertEqual(email1['subject'], 'Bulk Subject 1')
+        self.assertEqual(email1['received_date_time'], datetime(2024, 1, 1, 12, 0, 0))
+        self.assertEqual(email1['message_body'], 'This is bulk email 1.')
+        self.assertEqual(email1['label_ids'], ['INBOX'])
+
+    def test_insert_many_emails_empty_list(self):
+        """
+        Test handling of an empty list for bulk insertion.
+        """
+        inserted_count = self.db_manager.insert_many_emails([])
+        self.assertEqual(inserted_count, 0)
+
+        # Ensure no records were added
+        emails = self.db_manager.get_all_emails()
+        # Filter out any records that might have been inserted by other tests' setUp/tearDown cycles
+        # More robust to just check count after _this_ test's setup, which is currently done implicitly.
+        self.db_manager.cursor.execute("SELECT COUNT(*) FROM emails")
+        self.assertEqual(self.db_manager.cursor.fetchone()[0], 0)
+
+    def test_insert_many_emails_error_handling(self):
+        """
+        Test error handling during bulk insertion.
+        Simulate an error by closing the connection prematurely.
+        """
+        emails_data = [
+            {
+                'id': 'error_id_1',
+                'threadId': 'error_thread_1',
+                'From': 'error_sender@example.com',
+                'Subject': 'Error Subject 1',
+                'Received Date/Time': datetime(2024, 2, 1, 10, 0, 0),
+                'Message Body': 'This should fail.',
+                'labelIds': ['INBOX']
+            }
+        ]
+
+        # Simulate a database error by making the connection invalid
+        self.db_manager.conn.close()
+        self.db_manager.conn = None  # Explicitly set to None to simulate broken connection
+        self.db_manager.cursor = None  # Also invalidate cursor
+
+        # The method should catch the error and return 0
+        inserted_count = self.db_manager.insert_many_emails(emails_data)
+        self.assertEqual(inserted_count, 0)
+
 
 if __name__ == '__main__':
     unittest.main()

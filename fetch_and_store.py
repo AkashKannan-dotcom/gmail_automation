@@ -2,16 +2,16 @@
 
 from gmail_client import GmailClient
 from database_manager import DatabaseManager
-from rule_engine import Email
-import time
-from datetime import datetime
-import email.utils
+from rule_engine import Email  # Only need Email class for object creation
+# import time # No longer needed for individual inserts
+from datetime import datetime  # For date parsing safeguard
+import email.utils  # For robust date parsing
 
 
 def fetch_and_store_emails():
     """
     Authenticates with Gmail API, fetches emails, and stores their details
-    in the local SQLite database.
+    in the local SQLite database using bulk insertion for efficiency.
     """
     print("Starting email fetching and storage script...")
 
@@ -37,12 +37,12 @@ def fetch_and_store_emails():
 
     # 3. Fetch Emails from Gmail
     print("\nFetching emails from Gmail...")
-    # TODO : Fetching from 'in:inbox' for now. Can be modified to fetch 'all_mail' etc.
+    #TODO: Fetching from 'in:inbox' for now. Can be modified to fetch 'all_mail' etc.
     gmail_messages_ids = gmail_client.get_emails(query='in:inbox')
 
+    emails_to_store_in_db = []
     if gmail_messages_ids:
         print(f"Fetched {len(gmail_messages_ids)} message IDs from Gmail.")
-        stored_count = 0
         for msg_id_dict in gmail_messages_ids:
             message_id = msg_id_dict['id']
             email_details = gmail_client.get_email_details(message_id)
@@ -72,14 +72,16 @@ def fetch_and_store_emails():
                     message_body=email_details['Message Body'],
                     label_ids=email_details['labelIds']
                 )
-                if db_manager.insert_email(email_obj.to_dict()):
-                    stored_count += 1
-                # Add a small delay to avoid hitting API rate limits
-                time.sleep(0.1)
+                emails_to_store_in_db.append(email_obj.to_dict())
 
-        print(f"Successfully fetched and stored {stored_count} emails in the database.")
+        # Perform bulk insert after collecting all email data
+        if emails_to_store_in_db:
+            stored_count = db_manager.insert_many_emails(emails_to_store_in_db)
+            print(f"Successfully processed and stored {stored_count} emails in the database.")
+        else:
+            print("No valid emails found to store after fetching.")
     else:
-        print("No new emails found in Gmail to store.")
+        print("No emails found in Gmail to store.")
 
     # Clean Up
     db_manager.close_connection()
